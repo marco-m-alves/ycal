@@ -1,0 +1,23 @@
+<!DOCTYPE html>
+<html ng-app="app">
+<head>
+	<script src="http://yui.yahooapis.com/3.8.0/build/yui/yui-min.js"></script>
+	<script src="http://code.jquery.com/jquery.min.js"></script>
+	<link href="http://twitter.github.com/bootstrap/assets/css/bootstrap.css" rel="stylesheet" type="text/css" />  
+	<link href="http://twitter.github.com/bootstrap/assets/css/bootstrap-responsive.css" rel="stylesheet" type="text/css" />
+	<script src="http://twitter.github.com/bootstrap/assets/js/bootstrap.js"></script>
+	<link href="http://code.jquery.com/ui/jquery-ui-git.css" rel="stylesheet" type="text/css" />
+	<script src="http://code.jquery.com/jquery-git.js"></script>
+	<script src="http://code.jquery.com/ui/jquery-ui-git.js"></script>
+	<script src="//ajax.googleapis.com/ajax/libs/angularjs/1.0.6/angular.min.js"></script>
+	<script src="ycal.js"></script>
+	<script src="app.js"></script>
+	<meta charset=utf-8 />
+	<title>JS Bin</title>
+</head>
+<body ng-controller="Ctrl">
+  <input type="number" ng-model="year" placeholder="Put year here...">
+  <span ng-repeat="date in selectedDates">{{date | date: 'shortDate'}}, </span>
+  <ycalendar year="year" on-selection-change="onSelectionChange(dates)"></ycalendar>
+</body>
+</html>

@@ -17,6 +17,7 @@
 <body ng-controller="Ctrl">
   <input type="number" ng-model="year" placeholder="Put year here...">
   <span ng-repeat="date in selectedDates">{{date | date: 'shortDate'}}, </span>
+  <weekday-select selected-weekdays="selectedWeekdays"></weekday-select>
   <ycalendar year="year" rules="rules" styles="styles" on-selection-change="onSelectionChange(dates)"></ycalendar>
 </body>
 </html>

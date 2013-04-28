@@ -1,8 +1,18 @@
+// 
+// http://yuilibrary.com/yui/docs/calendar/#calendarbase-config-attributes
+// 
+
 angular.module('ycal', [] ).
-directive('ycalendar', function (YcalRenderer) {
+directive('ycalendar', function (YcalBuilder, YcalStyler) {
   return {
     restrict: 'E',
-    scope: { year: '=', rules: '=',  options: '=', onSelectionChange: '&' },
+    scope: {
+      year: '=',
+      rules: '=',
+      styles: '=',
+      options: '=',
+      onSelectionChange: '&'
+    },
     template: '<div class="content-box"></div>',
     link: function (scope, element) {
       
@@ -27,7 +37,7 @@ directive('ycalendar', function (YcalRenderer) {
       YUI().use('calendar', 'datatype-date', 'datatype-date-math', function (Y) {
         
          // Switch the calendar main template to the included two pane template
-         Y.CalendarBase.CONTENT_TEMPLATE = YcalRenderer.render(options.format || '3x4');
+         Y.CalendarBase.CONTENT_TEMPLATE = YcalBuilder.render(options.format || '3x4');
 
          // Create a new instance of calendar, setting the showing of previous
          // and next month's dates to true, and the selection mode to multiple
@@ -68,14 +78,25 @@ directive('ycalendar', function (YcalRenderer) {
         // one or more rule, along with the list of rules. Check if one of the
         // rules is "all_weekends", and if so, apply a custom CSS class to the
         // node.
-         calendar.set("customRenderer", {
-           rules: rules,
-           filterFunction: function (date, node, rules) {
-             if (Y.Array.indexOf(rules, 'all_weekends') >= 0) {
-               node.addClass("redtext");
-             }
-           }
-         });
+         
+         // calendar.set("customRenderer", {
+         //   rules: scope.rules,
+         //   filterFunction: function (date, node, rules) {
+         //     if (Y.Array.indexOf(rules, 'all_weekends') >= 0) {
+         //       node.addClass("redtext");
+         //     }
+         //   }
+         // });
+
+
+         var setCustomRenderer = function () {
+          calendar.set("customRenderer", {
+             rules: scope.rules,
+             filterFunction: YcalStyler.getStyleFunction(scope.styles)
+           });
+         };
+
+         scope.$watch('rules', setCustomRenderer, true);
 
           // Set a custom header renderer with a callback function,
           // which receives the current date and outputs a string.
@@ -103,12 +124,16 @@ directive('ycalendar', function (YcalRenderer) {
                 if (scope.onSelectionChange) scope.onSelectionChange({ dates: ev.newSelection }); 
               });
             });
-         
+
+
+            if (!scope.$$phase) {
+              scope.$apply();
+            }
       });
     }
   };
 })
-.service('YcalRenderer', function (YcalLayouts, YcalBaseTemplates) {
+.service('YcalBuilder', function (YcalLayouts, YcalBaseTemplates) {
 
   this.render = function ( layout ) {
     var layoutParts = YcalLayouts[layout],
@@ -126,6 +151,25 @@ directive('ycalendar', function (YcalRenderer) {
   };
 
 })
+.service('YcalStyler', function () {
+
+  // Applies custom styles to days defined in rules.
+  // It assumes the styles object parameter is given in the
+  // following format: { 'rule1': 'class' }
+
+  this.getStyleFunction = function (styles) {
+    var styleRules = Object.keys(styles);
+    return function (date, node, rules) {
+      angular.forEach(styleRules, function (styleRule) {
+        var className = styles[styleRule];
+        if (rules.indexOf(styleRule) >= 0) {
+          node.addClass(className);
+        }
+      });
+    };
+  };
+
+})
 .constant('YcalLayouts', {
   // rows x columns
   '6x2': ['left2', 'right2', 'left2', 'right2', 'left2', 'right2', 'left2', 'right2', 'left2', 'right2', 'left2', 'right2'],
@@ -133,7 +177,7 @@ directive('ycalendar', function (YcalRenderer) {
   '3x4': ['left4', 'left4', 'right4', 'right4', 'left4', 'left4', 'right4', 'right4', 'left4', 'left4', 'right4', 'right4']
 })
 .constant('YcalBaseTemplates', {
-  container: '<div class="yui3-g {calendar_pane_class}" id="{calendar_id}">' +  
+  container: '<div class="yui3-g {calendar_pane_class}" id="{calendar_id}">' + 
                  '{header_template}' + '{__grid__}' +
               '</div>',
   left4: '<div class="yui3-u-1-4">'+

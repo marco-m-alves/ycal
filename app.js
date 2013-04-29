@@ -1,8 +1,13 @@
 var app = angular.module('app', ['ycal']);
 
-app.controller('Ctrl', function($scope){
+app.controller('Ctrl', function ($scope, YcalRules) {
 
-	
+	var d = new Date(2013, 3, 28);
+	console.log(d);
+	console.log(YcalRules.isValidDate(d));
+	console.log(YcalRules.daysInMonth(d));
+	console.log(YcalRules.listOfDatesInMonth(d));
+
 	$scope.rules = {
            "all": {
              "all": {
@@ -16,6 +21,8 @@ app.controller('Ctrl', function($scope){
     $scope.styles = {
     	'custom_rule': 'redtext'
     };
+
+    console.log(YcalRules.getRulesForDate($scope.rules, d));
 
 
 	$scope.onSelectionChange = function(dates){

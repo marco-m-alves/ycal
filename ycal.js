@@ -170,6 +170,137 @@ directive('ycalendar', function (YcalBuilder, YcalStyler) {
   };
 
 })
+.service('YcalRules', function () {
+
+  var _isNumInList = function (num, strList) {
+      if (strList === "all") {
+          return true;
+      } else {
+          var elements = strList.split(","),
+              i = elements.length,
+              range;
+
+          while (i--) {
+              range = elements[i].split("-");
+              if (range.length === 2 && num >= parseInt(range[0], 10) && num <= parseInt(range[1], 10)) {
+                  return true;
+              }
+              else if (range.length === 1 && (parseInt(elements[i], 10) === num)) {
+                  return true;
+              }
+          }
+          return false;
+      }
+  };
+
+  this.isValidDate = function (date) {
+    var result;
+    if ( Object.prototype.toString.call(date) === "[object Date]" ) {
+      
+      if ( isNaN( date.getTime() ) ) {  // d.valueOf() could also work
+        result = false;
+      } else {
+        result = true;
+      }
+    } else {
+      result = false;
+    }
+
+    return result;
+  };
+
+  this.daysInMonth = function (oDate) {
+    if (!this.isValidDate(oDate)) {
+      return 0;
+    }
+    
+    var mon = oDate.getMonth();
+    var lengths = [31, 28, 31, 30, 31, 30, 31, 31, 30, 31, 30, 31];
+ 
+    if (mon != 1) {
+      return lengths[mon];
+    }
+    else {
+ 
+      var year = oDate.getFullYear();
+      if (year%400 === 0) {
+             return 29;
+      } 
+      else if (year%100 === 0) {
+           return 28;
+      }
+      else if (year%4 === 0) {
+             return 29;
+      }
+      else {
+             return 28;
+        }
+     } 
+  };
+
+  this.listOfDatesInMonth = function (oDate) {
+     if (!this.isValidDate(oDate)) {
+       return [];
+     }
+
+     var daysInMonth = this.daysInMonth(oDate),
+         year        = oDate.getFullYear(),
+         month       = oDate.getMonth(),
+         output      = [];
+
+     for (var day = 1; day <= daysInMonth; day++) {
+         output.push(new Date(year, month, day, 12, 0, 0));
+     }
+
+     return output;
+  };
+
+  this.getRulesForDate = function (rules, oDate) {
+        var year = oDate.getFullYear(),
+                month = oDate.getMonth(),
+                date = oDate.getDate(),
+                wday = oDate.getDay(),
+                // rules = this._rules,
+                outputRules = [],
+                years, months, dates, days;
+
+        for (years in rules) {
+            if (_isNumInList(year, years)) {
+                if (angular.isString(rules[years])) {
+                        outputRules.push(rules[years]);
+                }
+                else {
+                    for (months in rules[years]) {
+                        if (_isNumInList(month, months)) {
+                            if (angular.isString(rules[years][months])) {
+                                    outputRules.push(rules[years][months]);
+                            }
+                            else {
+                                for (dates in rules[years][months]) {
+                                    if (_isNumInList(date, dates)) {
+                                        if (angular.isString(rules[years][months][dates])) {
+                                                outputRules.push(rules[years][months][dates]);
+                                        }
+                                        else {
+                                            for (days in rules[years][months][dates]) {
+                                                if (_isNumInList(wday, days)) {
+                                                    if (angular.isString(rules[years][months][dates][days])) {
+                                                        outputRules.push(rules[years][months][dates][days]);
+                                                    }
+                                                }
+                                            }
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        }
+        return outputRules;
+    }
+})
 .constant('YcalLayouts', {
   // rows x columns
   '6x2': ['left2', 'right2', 'left2', 'right2', 'left2', 'right2', 'left2', 'right2', 'left2', 'right2', 'left2', 'right2'],
